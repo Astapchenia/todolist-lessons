@@ -6,9 +6,9 @@ import { v1 } from 'uuid'
 
 export type FilterValuesType = "all" | "active" | "completed"
 
-// Create ?
+// Create +
 // Read +
-// Update
+// Update +
 // Delete +
 
 // CRUD =>  CLI, GUI, VUI,
@@ -45,6 +45,12 @@ function App() {
     setTasks(nextState)
   }
 
+  const changeTaskStatus = (taskId: TaskType["id"], isDone: TaskType["isDone"]) => {
+      const nextState: TaskType[] = tasks.map(t => t.id === taskId ? {...t, isDone}: t)
+      setTasks(nextState)
+
+  }
+
   // UI
 
   const [filter, setFilter] = useState<FilterValuesType>("all")
@@ -56,10 +62,12 @@ function App() {
     <div className="app">
       <TodolistItem
         title="What to learn"
+        filter={filter}
         tasks={getFilteredTasks(tasks, filter)}
         deleteTask={deleteTask}
         createTask={createTask}
         changeTodolistFilter={changeTodolistFilter}
+        changeTaskStatus={changeTaskStatus}
       />
     </div>
   )

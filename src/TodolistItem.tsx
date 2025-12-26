@@ -6,10 +6,11 @@ import {Task} from "./Task"
 type Props = {
     title: string
     tasks: TaskType[]
+    filter: FilterValuesType
     deleteTask: (taskId: TaskType["id"]) => void
     createTask: (title: TaskType["title"]) => void
     changeTodolistFilter: (filter: FilterValuesType) => void
-
+    changeTaskStatus: (taskId: TaskType["id"], isDone: TaskType["isDone"]) => void
 }
 
 export type TaskType = {
@@ -21,12 +22,15 @@ export type TaskType = {
 export const TodolistItem = ({
                                  title,
                                  tasks,
+                                 filter,
                                  deleteTask,
                                  createTask,
-                                 changeTodolistFilter
+                                 changeTodolistFilter,
+                                 changeTaskStatus
                              }: Props) => {
 
     const [taskInput, setTaskInput] = useState("")
+    const [error, setError] = useState(false)
 
     const tasksList = tasks.length === 0
         ? <span>Craete your first task</span>
@@ -38,12 +42,19 @@ export const TodolistItem = ({
                     title={task.title}
                     isDone={task.isDone}
                     deleteTask={deleteTask}
+                    changeTaskStatus={changeTaskStatus}
+                    className={task.isDone ? "task-done" : "task"}
                 />)
             }
         </ul>
 
     const createTaskHandler = () => {
-        createTask(taskInput)
+        const trimmedTitle = taskInput.trim()
+        if(trimmedTitle){
+            createTask(trimmedTitle)
+        } else {
+            setError(true)
+        }
         setTaskInput("")
     }
 
@@ -55,13 +66,16 @@ export const TodolistItem = ({
             <div>
                 <input
                     value={taskInput}
-                    onChange={(e) => setTaskInput(e.currentTarget.value)}
+                    onChange={(e) => {
+                        error && setError(false)
+                        setTaskInput(e.currentTarget.value)
+                    }}
                     onKeyDown={(e) => {
                         if (e.key === "Enter" && isTaskInputValid) {
                             createTaskHandler()
                         }
-                    }
-                    }
+                    }}
+                    className={error ? "error" : ""}
                 />
                 <Button
                     title="add"
@@ -69,14 +83,28 @@ export const TodolistItem = ({
                     disabled={!isTaskInputValid}
                 />
             </div>
-            {!taskInput && <div>Max title length is 10 charters</div>}
+            {!error && !taskInput && <div>Max title length is 10 charters</div>}
             {taskInput.length > 10 && <div style={{color: "red"}}>Max title length is 10 charters</div>}
             {isTaskInputValid && <div>Your title length is {taskInput.length} charters</div>}
+            {error && <div style = {{color: "red"}}>Enter valid title</div>}
             {tasksList}
             <div>
-                <Button title="All" onClick={() => changeTodolistFilter("all")}/>
-                <Button title="Active" onClick={() => changeTodolistFilter("active")}/>
-                <Button title="Completed" onClick={() => changeTodolistFilter("completed")}/>
+                <Button
+                    title="All"
+                    onClick={() => changeTodolistFilter("all")}
+                    className={filter === "all" ? "filter-btn-active" : ""}
+                />
+                <Button
+                    title="Active"
+                    onClick={() => changeTodolistFilter("active")}
+                    className={filter === "active" ? "filter-btn-active" : ""}
+
+                />
+                <Button
+                    title="Completed"
+                    onClick={() => changeTodolistFilter("completed")}
+                    className={filter === "completed" ? "filter-btn-active" : ""}
+                />
             </div>
         </div>
     )
