@@ -1,16 +1,18 @@
 import {useState} from "react"
-import {FilterValuesType} from "./App"
+import {FilterValuesType, TodolistType} from "./App"
 import {Button} from "./Button"
 import {Task} from "./Task"
 
 type Props = {
+    id: string
     title: string
     tasks: TaskType[]
     filter: FilterValuesType
-    deleteTask: (taskId: TaskType["id"]) => void
-    createTask: (title: TaskType["title"]) => void
-    changeTodolistFilter: (filter: FilterValuesType) => void
-    changeTaskStatus: (taskId: TaskType["id"], isDone: TaskType["isDone"]) => void
+    deleteTask: (taskId: TaskType["id"], todolistId: TodolistType["id"]) => void
+    createTask: (title: TaskType["title"], todolistId: TodolistType["id"]) => void
+    changeTodolistFilter: (filter: FilterValuesType, todolistId: TodolistType["id"]) => void
+    changeTaskStatus: (taskId: TaskType["id"], isDone: TaskType["isDone"], todolistId: TodolistType["id"]) => void
+    deleteTodolist: (todolistId: TodolistType["id"]) => void
 }
 
 export type TaskType = {
@@ -20,13 +22,15 @@ export type TaskType = {
 }
 
 export const TodolistItem = ({
+                                 id,
                                  title,
                                  tasks,
                                  filter,
                                  deleteTask,
                                  createTask,
                                  changeTodolistFilter,
-                                 changeTaskStatus
+                                 changeTaskStatus,
+                                 deleteTodolist
                              }: Props) => {
 
     const [taskInput, setTaskInput] = useState("")
@@ -36,22 +40,30 @@ export const TodolistItem = ({
         ? <span>Craete your first task</span>
         : <ul>
             {
-                tasks.map(task => <Task
+                tasks.map(task => {
+
+                    const changeTaskStatusHandler = () => {
+                        changeTaskStatus(task.id, !task.isDone, id)
+                    }
+
+                    const deleteTaskHandler = () => deleteTask(task.id, id)
+
+                    return (
+                    <Task
                     key={task.id}
-                    id={task.id}
                     title={task.title}
                     isDone={task.isDone}
-                    deleteTask={deleteTask}
-                    changeTaskStatus={changeTaskStatus}
+                    deleteTask={deleteTaskHandler}
+                    changeTaskStatus={changeTaskStatusHandler}
                     className={task.isDone ? "task-done" : "task"}
-                />)
+                />)})
             }
         </ul>
 
     const createTaskHandler = () => {
         const trimmedTitle = taskInput.trim()
         if(trimmedTitle){
-            createTask(trimmedTitle)
+            createTask(trimmedTitle, id)
         } else {
             setError(true)
         }
@@ -62,7 +74,10 @@ export const TodolistItem = ({
 
     return (
         <div>
-            <h3>{title}</h3>
+            <h3>
+                {title}
+                <Button title="x" onClick={() => deleteTodolist(id)} />
+            </h3>
             <div>
                 <input
                     value={taskInput}
@@ -91,18 +106,18 @@ export const TodolistItem = ({
             <div>
                 <Button
                     title="All"
-                    onClick={() => changeTodolistFilter("all")}
+                    onClick={() => changeTodolistFilter("all", id)}
                     className={filter === "all" ? "filter-btn-active" : ""}
                 />
                 <Button
                     title="Active"
-                    onClick={() => changeTodolistFilter("active")}
+                    onClick={() => changeTodolistFilter("active", id)}
                     className={filter === "active" ? "filter-btn-active" : ""}
 
                 />
                 <Button
                     title="Completed"
-                    onClick={() => changeTodolistFilter("completed")}
+                    onClick={() => changeTodolistFilter("completed", id)}
                     className={filter === "completed" ? "filter-btn-active" : ""}
                 />
             </div>
